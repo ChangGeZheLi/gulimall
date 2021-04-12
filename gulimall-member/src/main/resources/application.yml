@@ -4,6 +4,13 @@ spring:
     password: root
     url: jdbc:mysql://192.168.48.110:3306/gulimall_ums
     driver-class-name: com.mysql.cj.jdbc.Driver
+  # 配置nacos注册地址
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+  application:
+    name: gulimall-member
 
 mybatis-plus:
   # classpath*表示不止扫描自己类路径下的mapper文件，也会扫描所引用的依赖中的jar包中的类路径也
