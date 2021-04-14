@@ -4,6 +4,10 @@ spring:
     password: root
     url: jdbc:mysql://192.168.48.110:3306/gulimall_pms
     driver-class-name: com.mysql.cj.jdbc.Driver
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
 
 mybatis-plus:
   # classpath*表示不止扫描自己类路径下的mapper文件，也会扫描所引用的依赖中的jar包中的类路径也
@@ -12,6 +16,12 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
+      # 配置逻辑删除标志
+      logic-delete-value: 1
+      logic-not-delete-value: 0
 # 配置端口号
 server:
-  port: 10000
+  port: 10001
+logging:
+  level:
+    com.syong.gulimall: debug

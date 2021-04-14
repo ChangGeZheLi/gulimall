@@ -7,7 +7,25 @@ spring:
           uri: http://www.baidu.com
           predicates:
             - Query=url,baidu
+
         - id: qq_route
           uri: http://www.qq.com
           predicates:
             - Query=url,qq
+
+         # 商品服务路由规则,过滤精度高的放上边
+        - id: product_route
+          uri: lb://gulimall-product
+          predicates:
+            - Path=/api/product/**
+          filters:
+            - RewritePath=/api/(?<segment>/?.*),/$\{segment}
+
+        - id: admin_route
+          #lb： 表示负载均衡
+          uri: lb://renren-fast
+          predicates:
+            #前端项目都带上/api
+            - Path=/api/**
+          filters:
+            - RewritePath=/api/(?<segment>/?.*),/renren-fast/$\{segment}

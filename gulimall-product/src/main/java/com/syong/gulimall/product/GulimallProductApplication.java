@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
  *  整合Mybatis-plus
@@ -21,6 +22,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *              @MapperScan
  **/
 @SpringBootApplication
+@EnableDiscoveryClient
 @MapperScan("com.syong.gulimall.product.dao")
 public class GulimallProductApplication {
 

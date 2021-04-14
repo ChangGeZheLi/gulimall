@@ -1,10 +1,14 @@
 package com.syong.gulimall.product.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+
 import lombok.Data;
 
 /**
@@ -38,7 +42,9 @@ public class CategoryEntity implements Serializable {
 	private Integer catLevel;
 	/**
 	 * 是否显示[0-不显示，1显示]
+	 * 添加逻辑删除注解
 	 */
+	@TableLogic(value = "1",delval = "0")
 	private Integer showStatus;
 	/**
 	 * 排序
@@ -56,5 +62,12 @@ public class CategoryEntity implements Serializable {
 	 * 商品数量
 	 */
 	private Integer productCount;
+
+	/**
+	 * TableField(exist = false) 数据表中没有的自定义属性
+	 * children 保存子分类
+	 **/
+	@TableField(exist = false)
+	private List<CategoryEntity> children;
 
 }
