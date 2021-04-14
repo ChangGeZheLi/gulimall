@@ -9,6 +9,11 @@
     <description>聚合服务</description>
     <packaging>pom</packaging>
 
+    <!--    设置java版本-->
+    <properties>
+        <java.version>11</java.version>
+    </properties>
+
 <!--    利用父项目聚合所有的子模块，maven只需要clean root项目就能把所有项目都clean-->
     <modules>
         <module>gulimall-coupon</module>

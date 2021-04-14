@@ -1,0 +1,13 @@
+# 配置网关路由规则
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: baidu_route
+          uri: http://www.baidu.com
+          predicates:
+            - Query=url,baidu
+        - id: qq_route
+          uri: http://www.qq.com
+          predicates:
+            - Query=url,qq

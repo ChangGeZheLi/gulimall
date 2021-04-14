@@ -12,6 +12,11 @@
     <artifactId>gulimall-common</artifactId>
     <description>每一个微服务的公共依赖，bean，工具类等</description>
 
+<!--    设置java版本-->
+    <properties>
+        <java.version>11</java.version>
+    </properties>
+
     <!--    依赖管理-->
     <dependencyManagement>
         <dependencies>
