@@ -1,5 +1,8 @@
 package com.syong.gulimall.product.controller;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -15,6 +18,7 @@ import com.syong.gulimall.product.service.BrandService;
 import com.syong.common.utils.PageUtils;
 import com.syong.common.utils.R;
 
+import javax.annotation.Resource;
 
 
 /**
@@ -27,6 +31,9 @@ import com.syong.common.utils.R;
 @RestController
 @RequestMapping("product/brand")
 public class BrandController {
+    /**
+     * 按类型注入
+     **/
     @Autowired
     private BrandService brandService;
 
@@ -40,6 +47,22 @@ public class BrandController {
 
         return R.ok().put("page", page);
     }
+
+    /*
+     * 阿里云对象存储
+     * 1、导入oss-starter
+     * 2、配置key，endpoint信息
+     * 3、注入OSSClient
+     **/
+//    @RequestMapping("/oss")
+//    //@RequiresPermissions("product:brand:list")
+//    public R oss() throws FileNotFoundException {
+//        InputStream inputStream = new FileInputStream("D:\\FILES\\ccd1077b985c7150.jpg");
+//        ossClient.putObject("gulimall-syong","test.jpg",inputStream);
+//        System.out.println("上传完成。。。。");
+//
+//        return R.ok();
+//    }
 
 
     /**
