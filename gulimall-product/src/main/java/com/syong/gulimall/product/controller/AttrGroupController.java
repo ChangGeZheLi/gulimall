@@ -1,21 +1,22 @@
 package com.syong.gulimall.product.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
+import com.syong.gulimall.product.entity.AttrEntity;
+import com.syong.gulimall.product.service.AttrService;
 import com.syong.gulimall.product.service.CategoryService;
+import com.syong.gulimall.product.vo.AttrGroupRelationVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.syong.gulimall.product.entity.AttrGroupEntity;
 import com.syong.gulimall.product.service.AttrGroupService;
 import com.syong.common.utils.PageUtils;
 import com.syong.common.utils.R;
 
+import javax.annotation.Resource;
 
 
 /**
@@ -30,9 +31,29 @@ import com.syong.common.utils.R;
 public class AttrGroupController {
     @Autowired
     private AttrGroupService attrGroupService;
-
     @Autowired
     private CategoryService categoryService;
+    @Resource
+    private AttrService attrService;
+
+    /**
+     * /product/attrgroup/attr/relation/delete
+     **/
+    @PostMapping("/attr/relation/delete")
+    public R deleteRelation(@RequestBody AttrGroupRelationVo[] vos ){
+        attrService.deleteRelation(vos);
+        return R.ok();
+    }
+
+    /**
+     * /product/attrgroup/{attrgroupId}/attr/relation
+     **/
+    @GetMapping("/{attrgroupId}/attr/relation")
+    public R attrRelation(@PathVariable("attrgroupId") Long attrgroupId){
+        List<AttrEntity> entities =  attrService.getRelationAttr(attrgroupId);
+
+        return R.ok().put("data",entities);
+    }
 
     /**
      * 列表

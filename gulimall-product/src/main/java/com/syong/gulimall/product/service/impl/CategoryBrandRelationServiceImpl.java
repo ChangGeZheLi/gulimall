@@ -69,8 +69,12 @@ public class CategoryBrandRelationServiceImpl extends ServiceImpl<CategoryBrandR
     }
 
     @Override
-    public void updateCategory(Long catId, String name) {
-        categoryBrandRelationDao.updateCategory(catId,name);
+    public void updateCategory(Long catelogId, String name) {
+//        categoryBrandRelationDao.updateCategory(catId,name);
+        CategoryBrandRelationEntity entity = new CategoryBrandRelationEntity();
+        entity.setCatelogId(catelogId);
+        entity.setCatelogName(name);
+        this.update(entity,new UpdateWrapper<CategoryBrandRelationEntity>().eq("catelog_id",catelogId));
     }
 
 }

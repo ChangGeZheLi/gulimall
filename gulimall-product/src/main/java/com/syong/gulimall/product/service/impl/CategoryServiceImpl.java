@@ -20,15 +20,13 @@ import com.syong.gulimall.product.dao.CategoryDao;
 import com.syong.gulimall.product.entity.CategoryEntity;
 import com.syong.gulimall.product.service.CategoryService;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 
 @Slf4j
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
-
-    @Resource
-    private CategoryDao categoryDao;
 
     @Resource
     private CategoryBrandRelationService categoryBrandRelationService;
@@ -97,9 +95,14 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     @Transactional
     @Override
     public void updateCascade(CategoryEntity category) {
-        int i = categoryDao.updateById(category);
-        log.info("更新是否成功{}",i);
-        categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
+//        int i = categoryDao.updateById(category);
+//        log.info("更新是否成功{}",i);
+//        categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
+
+        this.updateById(category);
+        if(!StringUtils.isEmpty(category.getName())){
+            categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
+        }
 
     }
 
