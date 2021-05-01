@@ -16,6 +16,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -68,7 +69,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
 
         //保存属性和属性分组之间的关联表中的信息
         //只有是基本属性才保存到关联表
-        if (attr.getAttrType() == ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode()) {
+        if (attr.getAttrType() == ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode() && attr.getAttrGroupId() != null) {
             AttrAttrgroupRelationEntity attrAttrgroupRelationEntity = new AttrAttrgroupRelationEntity();
             attrAttrgroupRelationEntity.setAttrGroupId(attr.getAttrGroupId());
             attrAttrgroupRelationEntity.setAttrId(entity.getAttrId());
@@ -114,7 +115,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
                 //查询属性分组name
                 AttrAttrgroupRelationEntity attrgroupRelationEntity = attrAttrgroupRelationDao.selectOne(new QueryWrapper<AttrAttrgroupRelationEntity>().eq("attr_id", attrEntity.getAttrId()));
                 //防止关联信息null
-                if (attrgroupRelationEntity != null) {
+                if (attrgroupRelationEntity != null && attrgroupRelationEntity.getAttrGroupId() != null) {
                     AttrGroupEntity attrGroupEntity = attrGroupDao.selectById(attrgroupRelationEntity.getAttrGroupId());
                     attrResponseVo.setGroupName(attrGroupEntity.getAttrGroupName());
                 }
@@ -211,10 +212,14 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
             return attr.getAttrId();
         }).collect(Collectors.toList());
 
-        //根据属性id集合查询所有属性
-        List<AttrEntity> attrEntities = this.listByIds(attrIds);
+        if(attrIds == null || attrIds.size()==0){
+            return null;
+        }
 
-        return attrEntities;
+        //根据属性id集合查询所有属性
+        Collection<AttrEntity> attrEntities = this.listByIds(attrIds);
+
+        return (List<AttrEntity>) attrEntities;
     }
 
     /**

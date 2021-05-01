@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.syong.gulimall.product.entity.AttrEntity;
+import com.syong.gulimall.product.service.AttrAttrgroupRelationService;
 import com.syong.gulimall.product.service.AttrService;
 import com.syong.gulimall.product.service.CategoryService;
 import com.syong.gulimall.product.vo.AttrGroupRelationVo;
+import com.syong.gulimall.product.vo.AttrGroupWithAttrsVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,12 +37,45 @@ public class AttrGroupController {
     private CategoryService categoryService;
     @Resource
     private AttrService attrService;
+    @Resource
+    private AttrAttrgroupRelationService relationService;
+
+    /**
+     * /product/attrgroup/{catelogId}/withattr
+     **/
+    @GetMapping("/{catelogId}/withattr")
+    public R getAttrGourpWithAttrs(@PathVariable("catelogId") Long catelogId){
+        List<AttrGroupWithAttrsVo> vos =  attrGroupService.getAttrGourpWithAttrsByCatelogId(catelogId);
+
+        return R.ok().put("data",vos);
+    }
+
+    /**
+     * /product/attrgroup/attr/relation
+     **/
+    @PostMapping("/attr/relation")
+    public R addRelation(@RequestBody List<AttrGroupRelationVo> vos){
+        relationService.saveBatch(vos);
+
+        return R.ok();
+    }
+
+    /**
+     * /product/attrgroup/{attrgroupId}/noattr/relation
+     **/
+    @GetMapping("/{attrgroupId}/noattr/relation")
+    public R attrNoRelation(@PathVariable("attrgroupId") Long attrgroupId,
+                            @RequestParam Map<String,Object> params){
+        PageUtils page = attrGroupService.getNoRelationAttr(params,attrgroupId);
+        return R.ok().put("page",page);
+    }
 
     /**
      * /product/attrgroup/attr/relation/delete
      **/
     @PostMapping("/attr/relation/delete")
     public R deleteRelation(@RequestBody AttrGroupRelationVo[] vos ){
+        System.out.println(Arrays.asList(vos));
         attrService.deleteRelation(vos);
         return R.ok();
     }
