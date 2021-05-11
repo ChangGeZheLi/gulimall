@@ -69,6 +69,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         BeanUtils.copyProperties(vo,spuInfoEntity);
         spuInfoEntity.setCreateTime(new Date());
         spuInfoEntity.setUpdateTime(new Date());
+        spuInfoEntity.setBrandId(9L);
         this.saveBaseSpuInfo(spuInfoEntity);
 
         //保存spu的描述图片：pms_spu_info_desc
@@ -107,9 +108,9 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         R r = couponFeignService.saveSpuBounds(spuBoundTo);
 
         //判断r的code，确定是否调用成功
-        if (r.getCode() != 0){
-            log.error("远程保存spu积分信息失败");
-        }
+//        if (r.getCode() != 0){
+//            log.error("远程保存spu积分信息失败");
+//        }
 
         //保存spu对应的sku信息
         List<Skus> skus = vo.getSkus();
@@ -174,9 +175,9 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                     R r1 = couponFeignService.saveSkuReduction(reductionTo);
 
                     //判断r的code，确定是否调用成功
-                    if (r1.getCode() != 0){
-                        log.error("远程保存sku优惠、满减信息失败");
-                    }
+//                    if (r1.getCode() != 0){
+//                        log.error("远程保存sku优惠、满减信息失败");
+//                    }
                 }
 
             });
@@ -186,6 +187,53 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     @Override
     public void saveBaseSpuInfo(SpuInfoEntity spuInfoEntity) {
         this.baseMapper.insert(spuInfoEntity);
+    }
+
+    @Override
+    public PageUtils queryPageByConditions(Map<String, Object> params) {
+        QueryWrapper<SpuInfoEntity> wrapper = new QueryWrapper<>();
+
+        System.out.println(params);
+
+        /**
+         * status: 0
+         * key:
+         * catelogId: 225
+         * page: 1
+         * limit: 10
+         * brandId: 9
+         **/
+        String key = (String) params.get("key");
+        if (!StringUtils.isEmpty(key)){
+            wrapper.and((w)->{
+                w.eq("id",key).or().like("spu_name",key);
+            });
+        }
+
+        String status = (String) params.get("status");
+        if (!StringUtils.isEmpty(status)){
+            wrapper.eq("publish_status",status);
+        }
+
+        String brandId = (String) params.get("brandId");
+        if (!StringUtils.isEmpty(brandId) && !"0".equalsIgnoreCase(brandId)){
+            wrapper.eq("brand_id",brandId);
+        }else {
+            wrapper.eq("brand_id",9L);
+        }
+
+
+        String catelogId = (String) params.get("catelogId");
+        if (!StringUtils.isEmpty(catelogId) && !"0".equalsIgnoreCase(catelogId)){
+            wrapper.eq("catalog_id",catelogId);
+        }
+
+        IPage<SpuInfoEntity> page = this.page(
+                new Query<SpuInfoEntity>().getPage(params),
+                wrapper
+        );
+
+        return new PageUtils(page);
     }
 
 }

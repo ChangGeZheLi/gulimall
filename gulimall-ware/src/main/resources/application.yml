@@ -5,9 +5,20 @@ spring:
     url: jdbc:mysql://192.168.48.110:3306/gulimall_wms
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+  application:
+    name: gulimall-ware
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+
 mybatis-plus:
   # classpath*表示不止扫描自己类路径下的mapper文件，也会扫描所引用的依赖中的jar包中的类路径也
-  mapper-locations: classpath:/mapper/**/*.xm
+  mapper-locations: classpath*:/mapper/**/*.xm
   # 设置所有主键自增
   global-config:
     db-config:
@@ -15,3 +26,8 @@ mybatis-plus:
 # 配置端口号
 server:
   port: 11000
+
+# 日志等级
+logging:
+  level:
+    com.syong: debug

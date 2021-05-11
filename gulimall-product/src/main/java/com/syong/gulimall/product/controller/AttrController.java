@@ -1,8 +1,11 @@
 package com.syong.gulimall.product.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
+import com.syong.gulimall.product.entity.ProductAttrValueEntity;
+import com.syong.gulimall.product.service.ProductAttrValueService;
 import com.syong.gulimall.product.vo.AttrGroupRelationVo;
 import com.syong.gulimall.product.vo.AttrResponseVo;
 import com.syong.gulimall.product.vo.AttrVo;
@@ -14,6 +17,7 @@ import com.syong.gulimall.product.service.AttrService;
 import com.syong.common.utils.PageUtils;
 import com.syong.common.utils.R;
 
+import javax.annotation.Resource;
 
 
 /**
@@ -28,15 +32,20 @@ import com.syong.common.utils.R;
 public class AttrController {
     @Autowired
     private AttrService attrService;
+    @Resource
+    private ProductAttrValueService productAttrValueService;
 
-//    /**
-//     * /product/attrgroup/attr/relation/delete
-//     **/
-//    @PostMapping("")
-//    public R deleteRelation(AttrGroupRelationVo[] vos ){
-//        attrService.deleteRelation(vos);
-//        return R.ok();
-//    }
+    /**
+     * /product/attr/base/listforspu/{spuId}
+     * 获取spu规格
+     **/
+    @GetMapping("/base/listforspu/{spuId}")
+    public R baseAttrlistForspu(@PathVariable("spuId") Long spuId){
+
+        List<ProductAttrValueEntity> entities =  productAttrValueService.baseAttrlistForspu(spuId);
+
+        return R.ok().put("data",entities);
+    }
 
     /**
      * /product/attr/base/list/{catelogId}
@@ -82,6 +91,19 @@ public class AttrController {
     //@RequiresPermissions("product:attr:save")
     public R save(@RequestBody AttrVo attr){
 		attrService.saveAttr(attr);
+
+        return R.ok();
+    }
+
+    /**
+     * 修改商品规格
+     * /product/attr/update/{spuId}
+     */
+    @PostMapping("/update/{spuId}")
+    //@RequiresPermissions("product:attr:update")
+    public R updateSpuAttr(@PathVariable("spuId") Long spuId,
+                           @RequestBody List<ProductAttrValueEntity> entities){
+        productAttrValueService.updateSpuAttr(spuId,entities);
 
         return R.ok();
     }

@@ -8,6 +8,10 @@ spring:
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
+  # 凡是返回日期的都会进行格式化
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
 
 mybatis-plus:
   # classpath*表示不止扫描自己类路径下的mapper文件，也会扫描所引用的依赖中的jar包中的类路径也

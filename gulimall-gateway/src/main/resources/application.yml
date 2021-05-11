@@ -29,6 +29,14 @@ spring:
           filters:
             - RewritePath=/api/(?<segment>/?.*),/$\{segment}
 
+        # 仓储服务路由规则,过滤精度高的放上边
+        - id: ware_route
+          uri: lb://gulimall-ware
+          predicates:
+            - Path=/api/ware/**
+          filters:
+            - RewritePath=/api/(?<segment>/?.*),/$\{segment}
+
         # 第三方服务网关
         - id: third_party_route
           uri: lb://gulimall-third-party
