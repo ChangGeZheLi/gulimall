@@ -84,7 +84,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
     @Override
     public PageUtils queryBaseAttrPage(Map<String, Object> params, Long catelogId, String type) {
         //在一开始就直接将type构建进queryWrapper
-        QueryWrapper<AttrEntity> queryWrapper = new QueryWrapper<AttrEntity>().eq("attr_type", "base".equalsIgnoreCase(type) ? ProductConstant.AttrEnum.ATTR_TYPE_BASE : ProductConstant.AttrEnum.ATTR_TYPE_SALE);
+        QueryWrapper<AttrEntity> queryWrapper = new QueryWrapper<AttrEntity>().eq("attr_type", "base".equalsIgnoreCase(type) ? ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode() : ProductConstant.AttrEnum.ATTR_TYPE_SALE.getCode());
         //拼接查询条件
         if (catelogId != 0) {
             queryWrapper.eq("catelog_id", catelogId);
@@ -235,6 +235,15 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         }).collect(Collectors.toList());
 
         attrAttrgroupRelationDao.deleteBatchRelation(relationEntities);
+    }
+
+    /**
+     * 在指定的所有属性集合中，挑出检索属性
+     **/
+    @Override
+    public List<Long> selectSearchAttrs(List<Long> attrIds) {
+       return baseMapper.selectSearchAttrs(attrIds);
+
     }
 
 }

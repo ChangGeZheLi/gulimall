@@ -15,7 +15,7 @@ spring:
 
 mybatis-plus:
   # classpath*表示不止扫描自己类路径下的mapper文件，也会扫描所引用的依赖中的jar包中的类路径也
-  mapper-locations: classpath:/mapper/**/*.xm
+  mapper-locations: classpath:mapper/**/*.xml
   # 设置所有主键自增
   global-config:
     db-config:

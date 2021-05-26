@@ -11,7 +11,7 @@ public class BrandVo {
     /**
      * "brandId": 0,
      **/
-    private Long bandId;
+    private Long brandId;
     /**
      * "brandName": "string",
      **/

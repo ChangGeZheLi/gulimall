@@ -42,7 +42,7 @@ public class CategoryBrandRelationController {
         //封装返回数据
         List<BrandVo> collect = entities.stream().map(item -> {
             BrandVo brandVo = new BrandVo();
-            brandVo.setBandId(item.getBrandId());
+            brandVo.setBrandId(item.getBrandId());
             brandVo.setBrandName(item.getName());
             return brandVo;
         }).collect(Collectors.toList());

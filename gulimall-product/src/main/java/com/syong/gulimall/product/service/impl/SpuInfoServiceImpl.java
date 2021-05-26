@@ -1,20 +1,24 @@
 package com.syong.gulimall.product.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
+import com.syong.common.constant.ProductConstant;
+import com.syong.common.to.SkuHasStockVo;
 import com.syong.common.to.SkuReductionTo;
 import com.syong.common.to.SpuBoundTo;
+import com.syong.common.to.es.SkuESModel;
 import com.syong.common.utils.R;
 import com.syong.gulimall.product.entity.*;
 import com.syong.gulimall.product.feign.CouponFeignService;
+import com.syong.gulimall.product.feign.SearchFeignService;
+import com.syong.gulimall.product.feign.WareFeignService;
 import com.syong.gulimall.product.service.*;
 import com.syong.gulimall.product.vo.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -29,7 +33,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 
-
+@Slf4j
 @Service("spuInfoService")
 public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> implements SpuInfoService {
 
@@ -49,6 +53,14 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     private SkuSaleAttrValueService skuSaleAttrValueService;
     @Resource
     private CouponFeignService couponFeignService;
+    @Resource
+    private BrandService brandService;
+    @Resource
+    private CategoryService categoryService;
+    @Resource
+    private WareFeignService wareFeignService;
+    @Resource
+    private SearchFeignService searchFeignService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -219,13 +231,15 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         if (!StringUtils.isEmpty(brandId) && !"0".equalsIgnoreCase(brandId)){
             wrapper.eq("brand_id",brandId);
         }else {
-            wrapper.eq("brand_id",9L);
+            wrapper.eq("brand_id",1L);
         }
 
 
         String catelogId = (String) params.get("catelogId");
         if (!StringUtils.isEmpty(catelogId) && !"0".equalsIgnoreCase(catelogId)){
             wrapper.eq("catalog_id",catelogId);
+        }else {
+            wrapper.eq("catalog_id",225);
         }
 
         IPage<SpuInfoEntity> page = this.page(
@@ -234,6 +248,98 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         );
 
         return new PageUtils(page);
+    }
+
+    /**
+     * 商品上架
+     **/
+    @Override
+    public void up(Long spuId) throws Exception{
+
+        //查出当前spuId对应的所有sku信息
+        List<SkuInfoEntity> skus =  skuInfoService.getSkusBySpuId(spuId);
+        List<Long> skuIdList = skus.stream().map(SkuInfoEntity::getSkuId).collect(Collectors.toList());
+
+        //查询当前sku的所有可以被用来检索的规格属性
+        List<ProductAttrValueEntity> baseAttrs = productAttrValueService.baseAttrlistForspu(spuId);
+        List<Long> attrIds = baseAttrs.stream().map(attr -> {
+            return attr.getAttrId();
+        }).collect(Collectors.toList());
+
+        //在指定的所有属性集合中，挑出检索属性
+        List<Long> searchIds = attrService.selectSearchAttrs(attrIds);
+
+        Set<Long> idSet = new HashSet<>(searchIds);
+
+        List<SkuESModel.Attrs> attrsList = baseAttrs.stream().filter(item -> {
+            return idSet.contains(item.getAttrId());
+        }).map(item -> {
+            SkuESModel.Attrs attrs = new SkuESModel.Attrs();
+            BeanUtils.copyProperties(item, attrs);
+            return attrs;
+        }).collect(Collectors.toList());
+
+
+        //发送远程调用，库存系统查询是否有库存
+        Map<Long, Boolean> stockMap = null;
+        try {
+            R hasStock = wareFeignService.hasStock(skuIdList);
+            TypeReference<List<SkuHasStockVo>> typeReference = new TypeReference<List<SkuHasStockVo>>(){};
+
+            stockMap = hasStock.getData(typeReference).stream().collect(Collectors.toMap(SkuHasStockVo::getSkuId, SkuHasStockVo::getHasStock));
+        }catch (Exception e){
+            log.error("库存远程调用异常，原因{}",e);
+        }
+
+
+        //封装每个sku信息成SkuESModel
+        Map<Long, Boolean> finalStockMap = stockMap;
+        List<SkuESModel> upProducts = skus.stream().map(sku -> {
+            //组装需要的数据
+            SkuESModel skuESModel = new SkuESModel();
+            BeanUtils.copyProperties(sku,skuESModel);
+
+            //skuPrice,skuImg
+            skuESModel.setSkuPrice(sku.getPrice());
+            skuESModel.setSkuImg(sku.getSkuDefaultImg());
+
+            //hasStock,hotScore
+            if (finalStockMap == null){
+                skuESModel.setHasStock(false);
+            }else {
+                skuESModel.setHasStock(finalStockMap.get(sku.getSkuId()));
+            }
+
+            //热度评分
+            skuESModel.setHotScore(0L);
+
+            //查询品牌和分类名字和信息
+            BrandEntity brandEntity = brandService.getById(sku.getBrandId());
+            skuESModel.setBrandImg(brandEntity.getLogo());
+            skuESModel.setBrandName(brandEntity.getName());
+
+            CategoryEntity categoryEntity = categoryService.getById(sku.getCatalogId());
+            skuESModel.setCatalogName(categoryEntity.getName());
+
+            //设置检索属性
+            skuESModel.setAttrs(attrsList);
+
+            return skuESModel;
+        }).collect(Collectors.toList());
+
+
+        //发送数据给es进行保存，需要远程调用search服务
+        R r = searchFeignService.productStatusUp(upProducts);
+        //调用成功r的code为0
+        System.out.println(r.getCode());
+        if (r.getCode() == 0){
+            //调用成功，需要将状态更改为上架
+            baseMapper.updateSpuStatus(spuId, ProductConstant.StatusEnum.SPU_UP.getCode());
+        }else {
+            //调用失败
+            //TODO 重复调用？接口幂等性；重试机制？
+        }
+
     }
 
 }
