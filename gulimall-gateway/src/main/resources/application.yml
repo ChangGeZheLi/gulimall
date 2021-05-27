@@ -17,7 +17,7 @@ spring:
         - id: product_route
           uri: lb://gulimall-product
           predicates:
-            - Path=/api/product/**
+            - Path=/api/product/**,/hello
           filters:
             - RewritePath=/api/(?<segment>/?.*),/$\{segment}
 
@@ -53,3 +53,11 @@ spring:
             - Path=/api/**
           filters:
             - RewritePath=/api/(?<segment>/?.*),/renren-fast/$\{segment}
+
+        # nginx转发到网关路由规则
+        - id: gulimall_host_route
+          #lb： 表示负载均衡
+          uri: lb://gulimall-product
+          predicates:
+            # gulimall.com的主机名都转发到product服务
+            - Host=**.gulimall.com,gulimall.com

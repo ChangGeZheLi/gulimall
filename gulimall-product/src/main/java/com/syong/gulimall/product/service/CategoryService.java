@@ -3,6 +3,7 @@ package com.syong.gulimall.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.syong.common.utils.PageUtils;
 import com.syong.gulimall.product.entity.CategoryEntity;
+import com.syong.gulimall.product.vo.foregroundVo.Catalog2Vo;
 
 import java.util.List;
 import java.util.Map;
@@ -25,5 +26,9 @@ public interface CategoryService extends IService<CategoryEntity> {
     Long[] getCatalogPathById(Long catelogId);
 
     void updateCascade(CategoryEntity category);
+
+    List<CategoryEntity> getLevel1Categories();
+
+    Map<String, List<Catalog2Vo>> getCatalogJson();
 }
 

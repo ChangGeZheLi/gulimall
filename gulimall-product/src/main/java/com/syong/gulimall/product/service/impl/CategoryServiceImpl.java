@@ -1,6 +1,7 @@
 package com.syong.gulimall.product.service.impl;
 
 import com.syong.gulimall.product.service.CategoryBrandRelationService;
+import com.syong.gulimall.product.vo.foregroundVo.Catalog2Vo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -104,6 +105,64 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
             categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
         }
 
+    }
+
+    /**
+     * 查出所有的一级分类菜单
+     **/
+    @Override
+    public List<CategoryEntity> getLevel1Categories() {
+
+        List<CategoryEntity> categoryEntities = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
+
+        return categoryEntities;
+    }
+
+    @Override
+    public Map<String, List<Catalog2Vo>> getCatalogJson() {
+
+        //将多次查询数据库优化为一次
+        List<CategoryEntity> selectList = baseMapper.selectList(null);
+
+        //查出所有的一级分类
+        List<CategoryEntity> level1Categories = getParentCid(selectList,0L);
+
+        //封装数据
+        Map<String, List<Catalog2Vo>> parent_cid = level1Categories.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
+            //每一个的一级分类，查到这个一级分类的二级分类
+            List<CategoryEntity> categoryEntities = getParentCid(selectList,v.getCatId());
+            List<Catalog2Vo> catalog2Vos = null;
+            //将上面结果封装为指定格式
+            if (categoryEntities != null) {
+                catalog2Vos = categoryEntities.stream().map(l2 -> {
+                    Catalog2Vo catalog2Vo = new Catalog2Vo(v.getCatId().toString(), null, l2.getCatId().toString(), l2.getName());
+                    //找出当前二级分类的三级分类
+                    List<CategoryEntity> category2Entities = getParentCid(selectList,l2.getCatId());
+                    if (category2Entities != null){
+                        List<Catalog2Vo.Catalog3Vo> collect = category2Entities.stream().map(l3 -> {
+                            //将三级分类数据封装到catalog2Vo中
+                            Catalog2Vo.Catalog3Vo catalog3Vo = new Catalog2Vo.Catalog3Vo(l2.getCatId().toString(), l3.getCatId().toString(), l3.getName());
+
+                            return catalog3Vo;
+                        }).collect(Collectors.toList());
+                        catalog2Vo.setCatalog3List(collect);
+                    }
+
+                    return catalog2Vo;
+                }).collect(Collectors.toList());
+            }
+
+            return catalog2Vos;
+
+        }));
+
+        return parent_cid;
+    }
+
+    private List<CategoryEntity> getParentCid(List<CategoryEntity> selectList,Long parentCid) {
+        //return baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", v.getCatId()));
+        List<CategoryEntity> collect = selectList.stream().filter(item -> item.getParentCid() == parentCid).collect(Collectors.toList());
+        return collect;
     }
 
     /**
