@@ -15,6 +15,10 @@ spring:
   # 关闭thymeleaf缓存
   thymeleaf:
     cache: false
+  # redis配置
+  redis:
+    host: 192.168.48.110
+    port: 6379
 
 
 mybatis-plus:
