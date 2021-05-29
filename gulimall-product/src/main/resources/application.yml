@@ -19,7 +19,17 @@ spring:
   redis:
     host: 192.168.48.110
     port: 6379
-
+  # 配置缓存的类型
+  cache:
+    type: redis
+    # 缓存过期时间
+    redis:
+      time-to-live: 3600000
+      # 缓存null值，防止缓存穿透
+      cache-null-values: true
+      # 如果指定了缓存前缀，则用该值，否则就用缓存名字
+      # key-prefix: CACHE_
+      use-key-prefix: true
 
 mybatis-plus:
   # classpath*表示不止扫描自己类路径下的mapper文件，也会扫描所引用的依赖中的jar包中的类路径也

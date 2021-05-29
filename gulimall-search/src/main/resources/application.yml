@@ -5,5 +5,9 @@ spring:
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
+  # 关闭缓存
+  thymeleaf:
+    cache: false
 server:
   port: 40000
+

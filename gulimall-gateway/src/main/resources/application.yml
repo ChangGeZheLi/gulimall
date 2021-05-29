@@ -55,9 +55,17 @@ spring:
             - RewritePath=/api/(?<segment>/?.*),/renren-fast/$\{segment}
 
         # nginx转发到网关路由规则
-        - id: gulimall_host_route
+        - id: gulimall_product_route
           #lb： 表示负载均衡
           uri: lb://gulimall-product
           predicates:
             # gulimall.com的主机名都转发到product服务
-            - Host=**.gulimall.com,gulimall.com
+            - Host=gulimall.com
+
+        # nginx转发到网关路由规则
+        - id: gulimall_search_route
+          #lb： 表示负载均衡
+          uri: lb://gulimall-search
+          predicates:
+            # search.gulimall.com的主机名都转发到search服务
+            - Host=search.gulimall.com

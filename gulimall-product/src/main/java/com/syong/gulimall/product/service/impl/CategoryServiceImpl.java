@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -118,7 +119,23 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     /**
      * 查出所有的一级分类菜单
+     * @Cacheable("category") 每一个缓存都需要指定要放到哪个名字下面，相当于缓存的分区，可以按照业务类型划分
+     * @Cacheable //当前方法的结果需要缓存，如果缓存中有则方法不会被调用，否则就会调用下面的方法，并且把结果存入缓存
+     * 默认行为：
+     *      如果缓存中有，方法不会被调用
+     *      缓存的key自动生成
+     *      缓存的value，默认使用jdk序列化机制，将序列化的结果存入redis
+     *      默认ttl时间是-1
+     * 需要自定义行为
+     *      指定生成缓存的key值：  key属性指定，可以使用表达式
+     *      指定缓存数据的ttl：  配置文件中修改spring.cache.redis.time-to-live
+     *      将数据保存为json格式：
+     *          原理：
+     *              CacheAutoConfiguration -> RedisCacheConfiguration -> 自动配置了RedisCacheManger
+     *              -> 初始化所有缓存 -> 每个缓存决定使用什么配置 -> 如果redisCacheConfiguration有就用已有的，没有就用默认配置
+     *              -> 想改缓存配置，只需要给ioc中放一个RedisCacheConfiguration即可 -> 就会应用到当前RedisCacheManager管理的所有缓存分区中
      **/
+    @Cacheable(value = {"category"},key = "#root.method.name")
     @Override
     public List<CategoryEntity> getLevel1Categories() {
 
