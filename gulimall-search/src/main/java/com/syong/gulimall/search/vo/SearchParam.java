@@ -44,5 +44,5 @@ public class SearchParam {
     /**
      * 页码
      **/
-    private Integer pageNum;
+    private Integer pageNum = 1 ;
 }
