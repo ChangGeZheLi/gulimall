@@ -3,6 +3,7 @@ package com.syong.gulimall.search.vo;
 import com.syong.common.to.es.SkuESModel;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,6 +29,10 @@ public class SearchResult {
      **/
     private Integer totalPages;
     /**
+     * 导航页码
+     **/
+    private List<Integer> pageNavs;
+    /**
      * 当前查询到的结果之中，所有涉及到的品牌
      **/
     private List<BrandVo> brands;
@@ -40,6 +45,19 @@ public class SearchResult {
      **/
     private List<CatalogVo> catalogs;
 
+    /**
+     * 面包屑导航数据
+     **/
+    private List<NavVo> navs = new ArrayList<>();
+    private List<Long> attrIds = new ArrayList<>();
+
+
+    @Data
+    public static class NavVo{
+        private String navName;
+        private String navValue;
+        private String link;
+    }
 
     @Data
     public static class BrandVo{

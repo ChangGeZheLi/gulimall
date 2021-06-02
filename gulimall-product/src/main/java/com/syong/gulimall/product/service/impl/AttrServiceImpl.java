@@ -13,6 +13,7 @@ import com.syong.gulimall.product.vo.AttrGroupRelationVo;
 import com.syong.gulimall.product.vo.AttrResponseVo;
 import com.syong.gulimall.product.vo.AttrVo;
 import org.springframework.beans.BeanUtils;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -138,6 +139,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
     /**
      * 获取属性分组id以及完整分类路径
      **/
+    @Cacheable(value = "attr",key = "'attrinfo:'+#root.args[0]")
     @Override
     public AttrResponseVo getAttrInfo(Long attrId) {
         AttrResponseVo attrResponseVo = new AttrResponseVo();

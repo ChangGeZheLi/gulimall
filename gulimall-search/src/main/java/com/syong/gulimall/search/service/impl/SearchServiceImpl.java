@@ -1,10 +1,15 @@
 package com.syong.gulimall.search.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.syong.common.to.es.SkuESModel;
+import com.syong.common.utils.R;
 import com.syong.gulimall.search.config.GulimallElasticSearchConfig;
 import com.syong.gulimall.search.constant.EsConstant;
+import com.syong.gulimall.search.feign.ProductFeignService;
 import com.syong.gulimall.search.service.SearchService;
+import com.syong.gulimall.search.vo.AttrResponseVo;
+import com.syong.gulimall.search.vo.BrandVo;
 import com.syong.gulimall.search.vo.SearchParam;
 import com.syong.gulimall.search.vo.SearchResult;
 import org.apache.lucene.search.join.ScoreMode;
@@ -17,7 +22,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
@@ -35,6 +39,8 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -47,6 +53,8 @@ public class SearchServiceImpl implements SearchService {
 
     @Resource
     private RestHighLevelClient highLevelClient;
+    @Resource
+    private ProductFeignService productFeignService;
 
     /**
      * 根据传递来的检索条件到es中查询数据
@@ -98,6 +106,7 @@ public class SearchServiceImpl implements SearchService {
             }
             result.setProducts(skuESModels);
         }
+
 
         //根据response和param封装返回结果
         //属性信息
@@ -186,7 +195,77 @@ public class SearchServiceImpl implements SearchService {
         Integer totalPages = (int)total % EsConstant.PRODUCT_PAGESIZE == 0 ? (int)total / EsConstant.PRODUCT_PAGESIZE : (int)total / EsConstant.PRODUCT_PAGESIZE + 1;
         result.setTotalPages(totalPages);
 
+        //封装导航页码
+        List<Integer> pageNavs = new ArrayList<>();
+        for (Integer i = 1; i <= totalPages; i++) {
+            pageNavs.add(i);
+        }
+        result.setPageNavs(pageNavs);
+
+        //封装面包屑导航数据
+        if (param.getAttrs()!=null && param.getAttrs().size()>0){
+            List<SearchResult.NavVo> navVos = param.getAttrs().stream().map(attr -> {
+                SearchResult.NavVo navVo = new SearchResult.NavVo();
+
+                //分析每个attrs传递得查询参数值:attrs=2_5寸:6寸
+                String[] s = attr.split("_");
+                navVo.setNavValue(s[1]);
+                R r = productFeignService.attrInfo(Long.parseLong(s[0]));
+                result.getAttrIds().add(Long.parseLong(s[0]));
+                if (r.getCode() == 0){
+                    AttrResponseVo data = r.getData("attr", new TypeReference<AttrResponseVo>() {
+                    });
+                    navVo.setNavName(data.getAttrName());
+                }else {
+                    navVo.setNavName(s[0]);
+                }
+
+                //取消了面包屑之后，要跳转的位置
+                //前端传递得值为编码后得结果
+                String replace = replaceQueryString(param, attr,"attrs");
+                navVo.setLink("http://search.gulimall.com/list.html?"+replace);
+
+                return navVo;
+            }).collect(Collectors.toList());
+
+            result.setNavs(navVos);
+        }
+
+        //将品牌和分类也放入面包屑
+        if (param.getBrandId() != null && param.getBrandId().size() > 0){
+            List<SearchResult.NavVo> navVos = result.getNavs();
+            SearchResult.NavVo navVo = new SearchResult.NavVo();
+
+            navVo.setNavName("品牌");
+            //远程查询所有品牌
+            R r = productFeignService.brandInfo(param.getBrandId());
+            if (r.getCode() == 0){
+                List<BrandVo> brand = r.getData("brand", new TypeReference<List<BrandVo>>() {});
+                StringBuffer buffer = new StringBuffer();
+                String replace = "";
+                for (BrandVo brandVo : brand) {
+                    buffer.append(brandVo.getBrandName()+"");
+                    replace = replaceQueryString(param,brandVo.getBrandId()+"","brandId");
+                }
+                navVo.setNavName(buffer.toString());
+                navVo.setLink("http://search.gulimall.com/list.html?"+replace);
+            }
+            navVos.add(navVo);
+        }
+
         return result;
+    }
+
+    private String replaceQueryString(SearchParam param, String attr,String key) {
+        String encode = null;
+        try {
+            encode = URLEncoder.encode(attr, "UTF-8");
+            //浏览器得空格和java得空格不一样
+            encode = encode.replace("+","%20");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return param.get_queryString().replace("&"+key+ "=" + encode, "");
     }
 
     /**
@@ -308,6 +387,7 @@ public class SearchServiceImpl implements SearchService {
 
         sourceBuilder.aggregation(nested);
 
+        System.out.println("构建的DSL为："+ sourceBuilder.toString());
 
         SearchRequest searchRequest = new SearchRequest(new String[]{EsConstant.PRODUCT_INDEX}, sourceBuilder);
 

@@ -44,5 +44,9 @@ public class SearchParam {
     /**
      * 页码
      **/
-    private Integer pageNum = 1 ;
+    private Integer pageNum =1;
+    /**
+     * 查询参数字符串
+     **/
+    private String _queryString;
 }

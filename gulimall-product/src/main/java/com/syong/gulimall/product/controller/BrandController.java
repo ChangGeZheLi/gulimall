@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.syong.common.valid.AddGroup;
@@ -12,11 +13,7 @@ import com.syong.common.valid.UpdateGroup;
 import com.syong.common.valid.UpdateStatusGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.syong.gulimall.product.entity.BrandEntity;
 import com.syong.gulimall.product.service.BrandService;
@@ -53,21 +50,15 @@ public class BrandController {
         return R.ok().put("page", page);
     }
 
-    /*
-     * 阿里云对象存储
-     * 1、导入oss-starter
-     * 2、配置key，endpoint信息
-     * 3、注入OSSClient
+    /**
+     * 查询所有品牌信息
      **/
-//    @RequestMapping("/oss")
-//    //@RequiresPermissions("product:brand:list")
-//    public R oss() throws FileNotFoundException {
-//        InputStream inputStream = new FileInputStream("D:\\FILES\\ccd1077b985c7150.jpg");
-//        ossClient.putObject("gulimall-syong","test.jpg",inputStream);
-//        System.out.println("上传完成。。。。");
-//
-//        return R.ok();
-//    }
+    @GetMapping("/infos")
+    public R infos(@RequestParam("brandIds") List<Long> branIds){
+        List<BrandEntity> brandEntities = brandService.getBrandsByIds(branIds);
+
+        return R.ok().put("brand",brandEntities);
+    }
 
 
     /**
