@@ -2,17 +2,16 @@ package com.syong.gulimall.product.service.impl;
 
 import com.syong.common.constant.ProductConstant;
 import com.syong.gulimall.product.dao.AttrAttrgroupRelationDao;
-import com.syong.gulimall.product.dao.AttrDao;
 import com.syong.gulimall.product.entity.AttrAttrgroupRelationEntity;
 import com.syong.gulimall.product.entity.AttrEntity;
 import com.syong.gulimall.product.service.AttrService;
 import com.syong.gulimall.product.vo.AttrGroupWithAttrsVo;
+import com.syong.gulimall.product.vo.foregroundVo.SpuItemAttrGroupVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -132,5 +131,17 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
         }).collect(Collectors.toList());
 
         return collect;
+    }
+
+    /**
+     * 获取商品详情页spu的规格参数信息
+     *
+     * @return*/
+    @Override
+    public List<SpuItemAttrGroupVo> getAttrGroupWithAttrsBySpuId(Long spuId, Long catalogId) {
+        //查询当前spu对应的所有属性的分组信息以及当前分组下的所有属性对应的值
+        List<SpuItemAttrGroupVo> vos = this.baseMapper.getAttrGroupWithAttrsBySpuId(spuId,catalogId);
+
+        return vos;
     }
 }

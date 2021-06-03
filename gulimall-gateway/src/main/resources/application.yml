@@ -60,7 +60,7 @@ spring:
           uri: lb://gulimall-product
           predicates:
             # gulimall.com的主机名都转发到product服务
-            - Host=gulimall.com
+            - Host=gulimall.com,item.gulimall.com
 
         # nginx转发到网关路由规则
         - id: gulimall_search_route
