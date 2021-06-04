@@ -9,6 +9,12 @@ spring:
       oss:
         endpoint: oss-cn-hangzhou.aliyuncs.com
         bucket: gulimall-syong
+      sms:
+        host: https://edisim.market.alicloudapi.com
+        path: /comms/sms/sendmsg
+        appcode: 63b75d32cf50438fa48af473f4d98a73
+        template-id: 20210604170620
+
   application:
     name: gulimall-third-party
 

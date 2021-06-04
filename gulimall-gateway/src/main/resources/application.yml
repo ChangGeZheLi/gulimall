@@ -69,3 +69,11 @@ spring:
           predicates:
             # search.gulimall.com的主机名都转发到search服务
             - Host=search.gulimall.com
+
+        # nginx转发到网关路由规则
+        - id: gulimall_auth_route
+          #lb： 表示负载均衡
+          uri: lb://gulimall-auth-server
+          predicates:
+            # auth.gulimall.com的主机名都转发到auth服务
+            - Host=auth.gulimall.com
