@@ -2,7 +2,6 @@ package com.syong.gulimall.thirdparty.controller;
 
 import com.syong.common.utils.R;
 import com.syong.gulimall.thirdparty.component.SmsComponent;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,9 +18,6 @@ public class SmsSendController {
 
     @Resource
     private SmsComponent smsComponent;
-    @Autowired
-
-
 
     /**
      * 提供给别的服务进行调用的，而不是页面直接映射到该controller中
