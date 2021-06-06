@@ -1,9 +1,11 @@
 package com.syong.gulimall.auth.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.syong.common.constant.AuthServerConstant;
 import com.syong.common.exception.BizCodeEnum;
 import com.syong.common.utils.R;
+import com.syong.common.vo.MemberEntity;
 import com.syong.gulimall.auth.feign.MemberFeignService;
 import com.syong.gulimall.auth.feign.ThirdPartyFeignService;
 import com.syong.gulimall.auth.service.LoginService;
@@ -104,6 +106,7 @@ public class LoginServiceImpl implements LoginService {
 
     /**
      * 会员登录
+     * @return
      */
     @Override
     public Map<String, String> login(UserLoginVo vo) {
@@ -112,7 +115,12 @@ public class LoginServiceImpl implements LoginService {
 
         R r = memberFeignService.login(vo);
         if (r.getCode() == 0) {
-            map.put("success","");
+            MemberEntity memberEntity = r.getData("data", new TypeReference<MemberEntity>() {});
+
+            String data = JSON.toJSONString(memberEntity);
+            System.out.println("data:  " + data);
+            map.put("success",data);
+
             return map;
         }else {
             map.put("msg",r.getData("msg",new TypeReference<String>(){}));

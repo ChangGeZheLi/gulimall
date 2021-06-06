@@ -24,6 +24,11 @@
 <!--            <artifactId>aliyun-sdk-oss</artifactId>-->
 <!--            <version>3.5.0</version>-->
 <!--        </dependency>-->
+<!--        整合springSession解决session共享问题-->
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-data-redis</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.syong.gulimall</groupId>
             <artifactId>gulimall-common</artifactId>

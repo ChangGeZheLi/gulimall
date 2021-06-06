@@ -11,6 +11,8 @@ public class GulimallAuthServerApplicationTests {
 
     @Test
     public void contextLoads() {
+
+
     }
 
 }

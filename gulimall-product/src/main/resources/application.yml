@@ -30,6 +30,9 @@ spring:
       # 如果指定了缓存前缀，则用该值，否则就用缓存名字
       # key-prefix: CACHE_
       use-key-prefix: true
+  # session保存类型
+  session:
+    store-type: redis
 
 mybatis-plus:
   # classpath*表示不止扫描自己类路径下的mapper文件，也会扫描所引用的依赖中的jar包中的类路径也
@@ -44,6 +47,10 @@ mybatis-plus:
 # 配置端口号
 server:
   port: 10001
+  servlet:
+    # session有效期
+    session:
+      timeout: 30m
 logging:
   level:
     com.syong.gulimall: debug

@@ -5,6 +5,7 @@ import com.syong.common.utils.PageUtils;
 import com.syong.gulimall.member.entity.MemberEntity;
 import com.syong.gulimall.member.exception.MobileExistException;
 import com.syong.gulimall.member.exception.UsernameExistException;
+import com.syong.gulimall.member.vo.SocialUser;
 import com.syong.gulimall.member.vo.UserLoginVo;
 import com.syong.gulimall.member.vo.UserRegisterVo;
 
@@ -28,5 +29,7 @@ public interface MemberService extends IService<MemberEntity> {
     void checkUsernameUnique(String username) throws UsernameExistException;
 
     MemberEntity login(UserLoginVo vo);
+
+    MemberEntity oauthLogin(SocialUser user);
 }
 

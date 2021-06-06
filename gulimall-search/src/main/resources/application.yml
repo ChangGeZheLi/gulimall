@@ -8,6 +8,11 @@ spring:
   # 关闭缓存
   thymeleaf:
     cache: false
+  redis:
+    host: 192.168.48.110
+  session:
+    store-type: redis
 server:
   port: 40000
+
 

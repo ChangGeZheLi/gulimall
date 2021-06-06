@@ -7,6 +7,7 @@ import com.syong.common.exception.BizCodeEnum;
 import com.syong.gulimall.member.exception.MobileExistException;
 import com.syong.gulimall.member.exception.UsernameExistException;
 import com.syong.gulimall.member.feign.CouponFeignService;
+import com.syong.gulimall.member.vo.SocialUser;
 import com.syong.gulimall.member.vo.UserLoginVo;
 import com.syong.gulimall.member.vo.UserRegisterVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,17 @@ public class MemberController {
     @Autowired
     CouponFeignService couponFeignService;
 
+
+    /**
+     * 社交登录
+     **/
+    @PostMapping("/oauth/login")
+    public R oauthLogin(@RequestBody SocialUser user){
+        MemberEntity memberEntity = memberService.oauthLogin(user);
+
+        return R.ok().setData(memberEntity);
+    }
+
     /**
      * 会员登录
      **/
@@ -42,7 +54,7 @@ public class MemberController {
     public R login(@RequestBody UserLoginVo vo){
         MemberEntity memberEntity = memberService.login(vo);
         if (memberEntity!=null){
-            return R.ok();
+            return R.ok().setData(memberEntity);
         }else {
             return R.error(BizCodeEnum.LOGINUSER_PASSWORD_INVALID_EXCEPTION.getCode(),BizCodeEnum.LOGINUSER_PASSWORD_INVALID_EXCEPTION.getMsg());
         }

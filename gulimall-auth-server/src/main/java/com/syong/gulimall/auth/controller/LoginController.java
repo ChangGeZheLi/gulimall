@@ -1,16 +1,21 @@
 package com.syong.gulimall.auth.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.syong.common.constant.AuthServerConstant;
 import com.syong.common.utils.R;
+import com.syong.common.vo.MemberEntity;
 import com.syong.gulimall.auth.service.LoginService;
 import com.syong.gulimall.auth.vo.UserLoginVo;
 import com.syong.gulimall.auth.vo.UserRegisterVo;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -76,11 +81,18 @@ public class LoginController {
      * 登录
      **/
     @PostMapping("/login")
-    public String login(UserLoginVo vo,RedirectAttributes redirectAttributes){
+    public String login(UserLoginVo vo, RedirectAttributes redirectAttributes, HttpSession session){
 
         Map<String, String> map = loginService.login(vo);
 
         if (map.containsKey("success")){
+            //拿到map中的值
+            String data = map.get("success");
+            MemberEntity memberEntity = JSON.parseObject(data, MemberEntity.class);
+
+            //登录成功九江数据寸在session中
+            session.setAttribute(AuthServerConstant.LOGIN_USER,memberEntity);
+
             return "redirect:http://gulimall.com";
         }else {
             redirectAttributes.addFlashAttribute("errors",map);

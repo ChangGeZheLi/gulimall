@@ -4,6 +4,7 @@ import com.syong.gulimall.member.entity.MemberLevelEntity;
 import com.syong.gulimall.member.exception.MobileExistException;
 import com.syong.gulimall.member.exception.UsernameExistException;
 import com.syong.gulimall.member.service.MemberLevelService;
+import com.syong.gulimall.member.vo.SocialUser;
 import com.syong.gulimall.member.vo.UserLoginVo;
 import com.syong.gulimall.member.vo.UserRegisterVo;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -56,6 +57,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
         checkUsernameUnique(vo.getUsername());
 
         memberEntity.setUsername(vo.getUsername());
+        memberEntity.setNickname(vo.getUsername());
         memberEntity.setMobile(vo.getMobile());
 
         //密码需要加密存储，使用spring封装的MD5加salt加密算法
@@ -108,6 +110,48 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
             }else {
                 return null;
             }
+        }
+    }
+
+    /**
+     * 处理社交登录问题
+     **/
+    @Override
+    public MemberEntity oauthLogin(SocialUser user) {
+
+        //登录和注册合并逻辑
+        Long uid = user.getUid();
+        //判断该用户是否已经注册
+        MemberEntity one = this.baseMapper.selectOne(new QueryWrapper<MemberEntity>().eq("social_uid", uid));
+        if (one!=null){
+            //用户已经注册了，需要更新数据
+            MemberEntity update = new MemberEntity();
+            update.setId(one.getId());
+            update.setAccessToken(user.getAccess_token());
+            update.setExpiresIn(user.getExpires_in());
+
+            this.baseMapper.updateById(update);
+
+            one.setAccessToken(user.getAccess_token());
+            one.setExpiresIn(user.getExpires_in());
+
+            return one;
+
+        }else {
+            //用户没有注册，需要注册
+            MemberEntity memberEntity = new MemberEntity();
+            memberEntity.setUsername(user.getName());
+            memberEntity.setNickname(user.getName());
+            memberEntity.setCreateTime(user.getCreateTime());
+            memberEntity.setSocialUid(user.getUid());
+            memberEntity.setAccessToken(user.getAccess_token());
+            memberEntity.setExpiresIn(user.getExpires_in());
+            memberEntity.setLevelId(1L);
+
+            this.baseMapper.insert(memberEntity);
+
+            return memberEntity;
+
         }
     }
 
