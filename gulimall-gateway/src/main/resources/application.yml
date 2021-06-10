@@ -77,3 +77,11 @@ spring:
           predicates:
             # auth.gulimall.com的主机名都转发到auth服务
             - Host=auth.gulimall.com
+
+        # nginx转发到网关路由规则
+        - id: gulimall_cart_route
+          #lb： 表示负载均衡
+          uri: lb://gulimall-cart
+          predicates:
+            # cart.gulimall.com的主机名都转发到cart服务
+            - Host=cart.gulimall.com
