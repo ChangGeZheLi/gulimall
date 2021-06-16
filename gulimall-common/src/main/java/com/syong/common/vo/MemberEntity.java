@@ -15,7 +15,7 @@ import java.util.Date;
  */
 @Data
 @ToString
-public class MemberEntity implements Serializable {
+public class 	MemberEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**

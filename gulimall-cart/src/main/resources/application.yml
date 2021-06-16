@@ -12,4 +12,4 @@ spring:
   redis:
     host: 192.168.48.110
 server:
-  port: 30000
+  port: 30010

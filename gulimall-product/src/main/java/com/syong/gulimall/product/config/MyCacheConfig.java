@@ -15,7 +15,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  */
 @Configuration
 @EnableCaching
-    @EnableConfigurationProperties(CacheProperties.class)
+@EnableConfigurationProperties(CacheProperties.class)
 public class MyCacheConfig {
 
     @Bean

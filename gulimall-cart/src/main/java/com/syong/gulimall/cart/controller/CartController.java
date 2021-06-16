@@ -11,10 +11,12 @@ import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -25,6 +27,13 @@ public class CartController {
 
     @Resource
     private CartService cartService;
+
+    @ResponseBody
+    @GetMapping("/currentUserCartItems")
+    public List<CartItem> getCurrentUserCartItems(){
+
+        return cartService.getCurrentUserCartItems();
+    }
 
     @GetMapping("/deleteItem")
     public String deleteItem(@RequestParam("skuId")Long skuId){
