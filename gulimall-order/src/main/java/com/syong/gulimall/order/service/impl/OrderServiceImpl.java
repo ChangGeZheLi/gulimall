@@ -1,12 +1,16 @@
 package com.syong.gulimall.order.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
+import com.syong.common.utils.R;
 import com.syong.common.vo.MemberEntity;
 import com.syong.gulimall.order.feign.CartFeignService;
 import com.syong.gulimall.order.feign.MemberFeignService;
-import com.syong.gulimall.order.interceptor.LoginUserInterceptor;
+import com.syong.gulimall.order.feign.WareFeignService;
+import com.syong.gulimall.order.interceptor.LoginInterceptor;
 import com.syong.gulimall.order.vo.MemberAddressVo;
 import com.syong.gulimall.order.vo.OrderConfirmVo;
 import com.syong.gulimall.order.vo.OrderItemVo;
+import com.syong.gulimall.order.vo.SkuHasStockVo;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -38,6 +43,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     @Resource
     private CartFeignService cartFeignService;
     @Resource
+    private WareFeignService wareFeignService;
+    @Resource
     private ThreadPoolExecutor threadPoolExecutor;
 
     @Override
@@ -56,7 +63,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     @Override
     public OrderConfirmVo confirmOrder() throws ExecutionException, InterruptedException {
         OrderConfirmVo confirmVo = new OrderConfirmVo();
-        MemberEntity memberEntity = LoginUserInterceptor.threadLocal.get();
+        MemberEntity memberEntity = LoginInterceptor.threadLocal.get();
 
         //解决使用异步时，threadLocal无法共享数据问题
         //先获取到之前的请求数据
@@ -77,7 +84,19 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             RequestContextHolder.setRequestAttributes(requestAttributes);
             List<OrderItemVo> cartItems = cartFeignService.getCurrentUserCartItems();
             confirmVo.setItems(cartItems);
-        }, threadPoolExecutor);
+        }, threadPoolExecutor).thenRunAsync(()->{
+            List<OrderItemVo> items = confirmVo.getItems();
+            List<Long> collect = items.stream().map(OrderItemVo::getSkuId).collect(Collectors.toList());
+            R r = wareFeignService.getSkuHasStock(collect);
+            List<SkuHasStockVo> data = r.getData(new TypeReference<List<SkuHasStockVo>>() {});
+
+            if (data != null){
+                Map<Long, Boolean> map = data.stream().collect(Collectors.toMap(SkuHasStockVo::getSkuId, SkuHasStockVo::getHasStock));
+
+                confirmVo.setStocks(map);
+            }
+
+        },threadPoolExecutor);
 
         //integration
         Integer integration = memberEntity.getIntegration();

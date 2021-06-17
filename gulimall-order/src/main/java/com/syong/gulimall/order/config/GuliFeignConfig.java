@@ -1,4 +1,4 @@
-package com.syong.gulimall.cart.config;
+package com.syong.gulimall.order.config;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
@@ -23,12 +23,14 @@ public class GuliFeignConfig{
                 //RequestContextHolder可以拿到刚进来的请求
                 ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
                 //老请求数据
-                HttpServletRequest request = attributes.getRequest();
-                if (request != null){
-                    //同步请求头数据
-                    String cookie = request.getHeader("Cookie");
-                    //给新请求同步老请求的cookie
-                    template.header("Cookie",cookie);
+                if (attributes!=null){
+                    HttpServletRequest request = attributes.getRequest();
+                    if (request != null){
+                        //同步请求头数据
+                        String cookie = request.getHeader("Cookie");
+                        //给新请求同步老请求的cookie
+                        template.header("Cookie", cookie);
+                    }
                 }
             }
         };

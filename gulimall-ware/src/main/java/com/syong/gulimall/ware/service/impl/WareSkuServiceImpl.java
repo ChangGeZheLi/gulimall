@@ -109,4 +109,19 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         return collect;
     }
 
+    @Override
+    public List<SkuHasStockVo> getSkuHasStock(List<Long> skuIds) {
+        List<SkuHasStockVo> collect = skuIds.stream().map(skuId -> {
+            SkuHasStockVo vo = new SkuHasStockVo();
+
+            //查询当前sku的总库存量
+            Long skuStock = baseMapper.getSkuStock(skuId);
+            vo.setHasStock(skuStock == null ? false : skuStock > 0);
+            vo.setSkuId(skuId);
+            return vo;
+        }).collect(Collectors.toList());
+
+        return collect;
+    }
+
 }

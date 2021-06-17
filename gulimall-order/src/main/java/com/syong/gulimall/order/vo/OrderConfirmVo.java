@@ -4,9 +4,11 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: 封装订单确认页需要的数据
@@ -47,6 +49,12 @@ public class OrderConfirmVo {
     @Getter
     @Setter
     private String orderToken;
+    @Setter
+    private Integer count;
+
+    @Setter
+    @Getter
+    private Map<Long,Boolean> stocks;
 
 
     public BigDecimal getTotal() {
@@ -67,6 +75,9 @@ public class OrderConfirmVo {
     }
 
     public Integer getCount(){
-        return items.size();
+        if (items!=null){
+            return items.size();
+        }
+        return 0;
     }
 }
