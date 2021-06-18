@@ -4,7 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.syong.common.exception.BizCodeEnum;
+import com.syong.common.exception.NoStockException;
 import com.syong.gulimall.ware.vo.SkuHasStockVo;
+import com.syong.gulimall.ware.vo.WareSkuLockVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +37,18 @@ public class WareSkuController {
         List<SkuHasStockVo> skuHasStockVos = wareSkuService.getSkuHasStock(skuIds);
 
         return R.ok().setData(skuHasStockVos);
+    }
+
+    @PostMapping("/lock/order")
+    public R orderLockStock(@RequestBody WareSkuLockVo vo){
+
+        try{
+            Boolean results = wareSkuService.orderLockStock(vo);
+
+            return R.ok().setData(results);
+        }catch (NoStockException e){
+            return R.error(BizCodeEnum.NO_STOCK_EXCEPTION.getCode(),BizCodeEnum.NO_STOCK_EXCEPTION.getMsg());
+        }
     }
 
     /**
