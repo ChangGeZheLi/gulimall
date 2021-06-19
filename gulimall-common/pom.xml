@@ -25,6 +25,11 @@
 
     <!--    添加公共需要的依赖-->
     <dependencies>
+        <!--    alibaba-seata-->
+<!--        <dependency>-->
+<!--            <groupId>com.alibaba.cloud</groupId>-->
+<!--            <artifactId>spring-cloud-starter-alibaba-seata</artifactId>-->
+<!--        </dependency>-->
         <!--        添加nacos依赖，服务注册发现-->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>

@@ -194,6 +194,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         }
     }
 
+    @Override
+    public OrderEntity getOrderStatusByOrderSn(String orderSn) {
+
+        OrderEntity orderEntity = this.getOne(new QueryWrapper<OrderEntity>().eq("order_sn", orderSn));
+
+        return orderEntity;
+    }
+
     /**
      * 保存订单
      **/
