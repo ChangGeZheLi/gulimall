@@ -4,6 +4,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.rabbitmq.client.Channel;
 import com.syong.common.exception.NoStockException;
+import com.syong.common.to.OrderTo;
 import com.syong.common.to.mq.StockDetailTo;
 import com.syong.common.to.mq.StockLockedTo;
 import com.syong.common.utils.R;
@@ -63,7 +64,13 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
      * 解锁库存
      **/
     private void unlockStock(Long skuId,Long wareId,Integer num,Long taskDetailId){
+        //解锁库存
         this.baseMapper.unlockStock(skuId,wareId,num);
+        //更新库存工作单的状态为已解锁
+        WareOrderTaskDetailEntity detailEntity = new WareOrderTaskDetailEntity();
+        detailEntity.setId(taskDetailId);
+        detailEntity.setLockStatus(2);
+        orderTaskDetailService.updateById(detailEntity);
     }
 
     @Override
@@ -189,7 +196,6 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
             return stock;
         }).collect(Collectors.toList());
 
-        boolean allLock = true;
         //锁定库存
         for (SkuWareHasStock stock : collect) {
 
@@ -206,7 +212,7 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
             for (Long wareId : wareIds) {
                 //成功就返回1，否则为0
                 long count = this.baseMapper.lockSkuStock(skuId,wareId,stock.getNum());
-                if (count == 0){
+                if (count != 0){
                     skuLocked = true;
 
                     //告诉mq库存锁定成功
@@ -255,9 +261,35 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
                 if (data == null || data.getStatus() == 4){
                     //订单不存在
                     //订单取消，需要解锁库存
-                    unlockStock(detailEntity.getSkuId(),detailEntity.getWareId(),detailEntity.getSkuNum(),detailEntity.getTaskId());
+                    if (detailEntity.getLockStatus() == 1){
+                        //只有当工作单状态为1-已锁定状态，才进行解锁
+                        unlockStock(detailEntity.getSkuId(),detailEntity.getWareId(),detailEntity.getSkuNum(),detailEntity.getId());
+                    }
+                }else {
+                    //远程服务调用失败
+                    throw new RuntimeException("远程服务调用失败");
                 }
             }
+        }
+    }
+
+    /**
+     * 避免订单服务网络卡顿，导致订单状态一直不更改，也就造成库存一直无法解锁
+     **/
+    @Override
+    @Transactional
+    public void unlockStock(OrderTo to) {
+        //查询最新的库存状态，防止重复解锁库存
+        String orderSn = to.getOrderSn();
+        WareOrderTaskEntity entity = orderTaskService.getByOrderSn(orderSn);
+        Long id = entity.getId();
+        //根据工作单id找到所有没有被解锁过的库存
+        List<WareOrderTaskDetailEntity> detailEntities = orderTaskDetailService.list(new QueryWrapper<WareOrderTaskDetailEntity>()
+                .eq("task_id", id)
+                .eq("lock_status", 1));
+
+        for (WareOrderTaskDetailEntity detailEntity : detailEntities) {
+            unlockStock(detailEntity.getSkuId(),detailEntity.getWareId(),detailEntity.getSkuNum(),detailEntity.getId());
         }
     }
 

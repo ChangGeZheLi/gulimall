@@ -14,7 +14,10 @@ import com.syong.gulimall.order.feign.WareFeignService;
 import com.syong.gulimall.order.interceptor.LoginInterceptor;
 import com.syong.gulimall.order.service.OrderItemService;
 import com.syong.gulimall.order.to.OrderCreateTo;
+import com.syong.common.to.OrderTo;
 import com.syong.gulimall.order.vo.*;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -63,6 +66,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     private ProductFeignService productFeignService;
     @Resource
     private OrderItemService orderItemService;
+    @Resource
+    private RabbitTemplate rabbitTemplate;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -180,12 +185,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                 if (r.getCode() == 0) {
                     //锁定成功
                     responseVo.setOrder(order.getOrder());
-                    return responseVo;
+                    //订单创建成功，给rabbitmq发送消息
+                    rabbitTemplate.convertAndSend("order-event-exchange","order.create.order",order.getOrder());
                 }else {
                     //失败
                     responseVo.setCode(3);
-                    return responseVo;
                 }
+                return responseVo;
             }else {
                 //验价失败
                 responseVo.setCode(2);
@@ -200,6 +206,47 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         OrderEntity orderEntity = this.getOne(new QueryWrapper<OrderEntity>().eq("order_sn", orderSn));
 
         return orderEntity;
+    }
+
+    /**
+     * 关闭订单，使用异常机制，只要抛出异常就不
+     **/
+    @Override
+    public void closeOrder(OrderEntity entity) {
+        //查询订单的最新状态是否是待付款状态
+        OrderEntity orderEntity = this.getById(entity.getId());
+        if (orderEntity.getStatus().equals(OrderStatusEnum.CREATE_NEW.getCode())){
+            //关闭订单
+            OrderEntity order = new OrderEntity();
+            order.setId(entity.getId());
+            order.setStatus(OrderStatusEnum.CANCLED.getCode());
+            this.updateById(order);
+
+            //发送mq已经关闭订单，需要解锁库存
+            OrderTo orderTo = new OrderTo();
+            BeanUtils.copyProperties(orderEntity,orderTo);
+            rabbitTemplate.convertAndSend("order-event-exchange","order.release.other.#",orderTo);
+        }
+    }
+
+    /**
+     * 获取当前订单的支付信息
+     **/
+    @Override
+    public PayVo getOrderPay(String orderSn) {
+        PayVo payVo = new PayVo();
+
+        OrderEntity orderEntity = this.getOrderStatusByOrderSn(orderSn);
+        payVo.setTotal_amount(orderEntity.getPayAmount().setScale(2,BigDecimal.ROUND_UP).toString());
+        payVo.setOut_trade_no(orderSn);
+
+        List<OrderItemEntity> itemEntities = orderItemService.list(new QueryWrapper<OrderItemEntity>().eq("order_sn", orderSn));
+        OrderItemEntity itemEntity = itemEntities.get(0);
+
+        payVo.setSubject(itemEntity.getSkuName());
+        payVo.setBody(itemEntity.getSkuAttrsVals());
+
+        return payVo;
     }
 
     /**

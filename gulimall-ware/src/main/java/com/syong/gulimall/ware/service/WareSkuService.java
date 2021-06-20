@@ -1,6 +1,7 @@
 package com.syong.gulimall.ware.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.syong.common.to.OrderTo;
 import com.syong.common.to.mq.StockLockedTo;
 import com.syong.common.utils.PageUtils;
 import com.syong.gulimall.ware.entity.WareSkuEntity;
@@ -30,5 +31,7 @@ public interface WareSkuService extends IService<WareSkuEntity> {
     Boolean orderLockStock(WareSkuLockVo vo);
 
     void unlockStock(StockLockedTo to);
+
+    void unlockStock(OrderTo to);
 }
 

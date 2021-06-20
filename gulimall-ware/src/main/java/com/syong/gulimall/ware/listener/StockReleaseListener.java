@@ -2,6 +2,7 @@ package com.syong.gulimall.ware.listener;
 
 import com.alibaba.fastjson.TypeReference;
 import com.rabbitmq.client.Channel;
+import com.syong.common.to.OrderTo;
 import com.syong.common.to.mq.StockLockedTo;
 import com.syong.common.utils.R;
 import com.syong.gulimall.ware.entity.WareOrderTaskDetailEntity;
@@ -41,7 +42,16 @@ public class StockReleaseListener {
         }catch (Exception e){
             channel.basicReject(message.getMessageProperties().getDeliveryTag(),true);
         }
+    }
 
+    @RabbitHandler
+    private void handleOrderCloseRelease(OrderTo to,Message message,Channel channel) throws IOException {
+        try{
+            wareSkuService.unlockStock(to);
+            channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
+        }catch (Exception e){
+            channel.basicReject(message.getMessageProperties().getDeliveryTag(),true);
+        }
     }
 
 }

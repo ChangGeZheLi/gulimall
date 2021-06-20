@@ -55,4 +55,6 @@ public class OrderWebController {
             return "redirect:http://order.gulimall.com/toTrade";
         }
     }
+
+
 }

@@ -1,6 +1,7 @@
 package com.syong.gulimall.order.config;
 
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -57,6 +58,16 @@ public class MyMQConfig {
     @Bean
     public Binding orderReleaseOrderBinding(){
         Binding binding = new Binding("order.release.queue", Binding.DestinationType.QUEUE, "order-event-exchange", "order.release.order",null);
+        return binding;
+    }
+
+    /**
+     * 订单释放直接和库存释放绑定
+     * 避免订单锁定库存消息因为网络延迟等其他原因没有其实的发送给mq，而库存解锁消息先锁定库存消息一步进行，从而导致库存一直锁定的情况
+     **/
+    @Bean
+    public Binding orderReleaseOtherBinding(){
+        Binding binding = new Binding("stock.release.queue", Binding.DestinationType.QUEUE, "order-event-exchange", "order.release.other.#",null);
         return binding;
     }
 }
