@@ -6,6 +6,7 @@ import com.syong.common.utils.R;
 import com.syong.common.vo.MemberEntity;
 import com.syong.gulimall.order.constant.OrderConstant;
 import com.syong.gulimall.order.entity.OrderItemEntity;
+import com.syong.gulimall.order.entity.PaymentInfoEntity;
 import com.syong.gulimall.order.enumm.OrderStatusEnum;
 import com.syong.gulimall.order.feign.CartFeignService;
 import com.syong.gulimall.order.feign.MemberFeignService;
@@ -13,6 +14,7 @@ import com.syong.gulimall.order.feign.ProductFeignService;
 import com.syong.gulimall.order.feign.WareFeignService;
 import com.syong.gulimall.order.interceptor.LoginInterceptor;
 import com.syong.gulimall.order.service.OrderItemService;
+import com.syong.gulimall.order.service.PaymentInfoService;
 import com.syong.gulimall.order.to.OrderCreateTo;
 import com.syong.common.to.OrderTo;
 import com.syong.gulimall.order.vo.*;
@@ -68,6 +70,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     private OrderItemService orderItemService;
     @Resource
     private RabbitTemplate rabbitTemplate;
+    @Resource
+    private PaymentInfoService paymentInfoService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -247,6 +251,54 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         payVo.setBody(itemEntity.getSkuAttrsVals());
 
         return payVo;
+    }
+
+    @Override
+    public PageUtils queryPageWithItem(Map<String, Object> params) {
+
+        MemberEntity memberEntity = LoginInterceptor.threadLocal.get();
+
+        IPage<OrderEntity> page = this.page(
+                new Query<OrderEntity>().getPage(params),
+                new QueryWrapper<OrderEntity>().eq("member_id",memberEntity.getId()).orderByDesc("id")
+        );
+
+        List<OrderEntity> collect = page.getRecords().stream().map(order -> {
+            List<OrderItemEntity> entityList = orderItemService.list(new QueryWrapper<OrderItemEntity>().eq("order_sn", order.getOrderSn()));
+
+            order.setItemEntities(entityList);
+
+            return order;
+        }).collect(Collectors.toList());
+
+        page.setRecords(collect);
+
+        return new PageUtils(page);
+
+    }
+
+    /**
+     * 根据支付宝支付返回结果,修改订单状态
+     **/
+    @Override
+    public String handlePayResult(PayAsyncVo vo) {
+
+        //保存交易流水
+        PaymentInfoEntity paymentInfoEntity = new PaymentInfoEntity();
+        paymentInfoEntity.setAlipayTradeNo(vo.getTrade_no());
+        paymentInfoEntity.setCallbackTime(vo.getNotify_time());
+        paymentInfoEntity.setOrderSn(vo.getOut_trade_no());
+        paymentInfoEntity.setPaymentStatus(vo.getTrade_status());
+
+        paymentInfoService.save(paymentInfoEntity);
+
+        //修改订单的状态信息
+        if (vo.getTrade_status().equals("TRADE_SUCCESS")||vo.getTrade_status().equals("TRADE_FINISHED")){
+            String outTradeNo = vo.getOut_trade_no();
+            this.baseMapper.updateOrderStatus(outTradeNo,OrderStatusEnum.PAYED.getCode());
+        }
+
+        return "success";
     }
 
     /**

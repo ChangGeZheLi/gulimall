@@ -26,6 +26,9 @@ public class OrderCloseListener {
 
         try{
             orderService.closeOrder(entity);
+            //手动调用支付宝收单，防止因为延时问题
+
+
             channel.basicAck(message.getMessageProperties().getDeliveryTag(),false);
         }catch (Exception e){
             channel.basicReject(message.getMessageProperties().getDeliveryTag(),true);

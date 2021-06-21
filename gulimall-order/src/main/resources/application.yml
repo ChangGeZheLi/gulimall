@@ -17,6 +17,8 @@ spring:
   redis:
     host: 192.168.48.110
     port: 6379
+  mvc:
+    date-format: yyyy-MM-dd HH:mm:ss
 
 mybatis-plus:
   # classpath*表示不止扫描自己类路径下的mapper文件，也会扫描所引用的依赖中的jar包中的类路径也
@@ -28,4 +30,5 @@ mybatis-plus:
 # 配置端口号
 server:
   port: 9001
+
 
