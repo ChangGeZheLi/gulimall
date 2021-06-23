@@ -109,3 +109,11 @@ spring:
           predicates:
             # member.gulimall.com的主机名都转发到cart服务
             - Host=member.gulimall.com
+
+        # nginx转发到网关路由规则
+        - id: gulimall_seckill_route
+          #lb： 表示负载均衡
+          uri: lb://gulimall-secondkill
+          predicates:
+            # seckill.gulimall.com的主机名都转发到cart服务
+            - Host=seckill.gulimall.com

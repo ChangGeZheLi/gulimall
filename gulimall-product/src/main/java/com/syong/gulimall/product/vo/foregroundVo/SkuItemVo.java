@@ -3,6 +3,7 @@ package com.syong.gulimall.product.vo.foregroundVo;
 import com.syong.gulimall.product.entity.SkuImagesEntity;
 import com.syong.gulimall.product.entity.SkuInfoEntity;
 import com.syong.gulimall.product.entity.SpuInfoDescEntity;
+import com.syong.gulimall.product.vo.SeckillInfoVo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -37,5 +38,10 @@ public class SkuItemVo {
      * spu的规格参数信息
      **/
     private List<SpuItemAttrGroupVo> groupAttrs;
+
+    /**
+     * 秒杀信息
+     **/
+    private SeckillInfoVo seckillInfo;
 
 }
