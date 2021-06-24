@@ -70,4 +70,16 @@ public class MyMQConfig {
         Binding binding = new Binding("stock.release.queue", Binding.DestinationType.QUEUE, "order-event-exchange", "order.release.other.#",null);
         return binding;
     }
+
+    @Bean
+    public Queue orderSeckillQueue(){
+        Queue queue = new Queue("order.seckill.queue",true,false,false);
+        return queue;
+    }
+
+    @Bean
+    public Binding orderSeckillQueueBinding(){
+        Binding binding = new Binding("order.seckill.queue", Binding.DestinationType.QUEUE, "order-event-exchange", "order.seckill.order",null);
+        return binding;
+    }
 }

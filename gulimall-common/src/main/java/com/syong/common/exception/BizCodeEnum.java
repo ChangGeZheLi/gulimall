@@ -18,6 +18,7 @@ package com.syong.common.exception;
 public enum BizCodeEnum {
     UNKNOW_EXCEPTION(10001,"系统未知异常"),
     VALID_EXCEPTION(10001,"参数格式校验失败"),
+    TOO_MANY_REQUEST(10002,"请求流量过大"),
     SMS_CODE_EXCEPTION(10002,"验证码获取频率太高，请稍后再试"),
     USER_EXIST_EXCEPTION(15001,"用户名已存在"),
     MOBILE_EXIST_EXCEPTION(15002,"手机号已存在"),

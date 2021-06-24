@@ -19,6 +19,11 @@
         <elasticsearch.version>7.4.2</elasticsearch.version>
     </properties>
     <dependencies>
+        <!--        actuator监控-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
         <!--        整合springSession解决session共享问题-->
         <dependency>
             <groupId>org.springframework.session</groupId>

@@ -18,6 +18,11 @@
         <spring-cloud.version>Greenwich.SR3</spring-cloud.version>
     </properties>
     <dependencies>
+        <!--        actuator监控-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
 <!--        导入公共依赖-->
         <dependency>
             <groupId>com.syong.gulimall</groupId>

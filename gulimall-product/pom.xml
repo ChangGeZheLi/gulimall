@@ -24,6 +24,12 @@
 <!--            <artifactId>aliyun-sdk-oss</artifactId>-->
 <!--            <version>3.5.0</version>-->
 <!--        </dependency>-->
+
+        <!--        actuator监控-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
 <!--        整合springSession解决session共享问题-->
         <dependency>
             <groupId>org.springframework.session</groupId>

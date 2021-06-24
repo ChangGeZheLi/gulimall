@@ -1,12 +1,14 @@
 package com.syong.gulimall.order.config;
 
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -19,6 +21,19 @@ public class MyRabbitConfig {
 
     @Resource
     RabbitTemplate rabbitTemplate;
+
+//    /**
+//     * 解决自动注入循环依赖问题
+//     **/
+//    @Primary
+//    @Bean
+//    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory){
+//        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+//        this.rabbitTemplate = rabbitTemplate;
+//        rabbitTemplate.setMessageConverter(messageConverter());
+//        initRabbitTemplate();
+//        return rabbitTemplate;
+//    }
 
     /**
      * 如果容器中没有指定MessageConverter，就会用默认的转换器，也就是WhiteListDeserializingMessageConverter转换器

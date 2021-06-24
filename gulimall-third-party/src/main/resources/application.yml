@@ -14,6 +14,9 @@ spring:
         path: /comms/sms/sendmsg
         appcode: 63b75d32cf50438fa48af473f4d98a73
         template-id: 20210604170620
+    sentinel:
+      transport:
+        dashboard: localhost:8333
 
   application:
     name: gulimall-third-party
@@ -24,3 +27,9 @@ server:
 logging:
   level:
     com.atguigu.gulimall.product: debug
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: *

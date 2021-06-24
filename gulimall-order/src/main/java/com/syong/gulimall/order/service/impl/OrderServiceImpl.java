@@ -2,6 +2,7 @@ package com.syong.gulimall.order.service.impl;
 
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.syong.common.to.mq.SeckillOrderTo;
 import com.syong.common.utils.R;
 import com.syong.common.vo.MemberEntity;
 import com.syong.gulimall.order.constant.OrderConstant;
@@ -299,6 +300,30 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         }
 
         return "success";
+    }
+
+    @Override
+    public void createSeckillOrder(SeckillOrderTo to) {
+        //保存订单信息
+        OrderEntity orderEntity = new OrderEntity();
+
+        orderEntity.setOrderSn(to.getOrderSn());
+        orderEntity.setMemberId(to.getMemberId());
+        orderEntity.setStatus(OrderStatusEnum.CREATE_NEW.getCode());
+
+        BigDecimal multiply = to.getSeckillPrice().multiply(new BigDecimal("" + to.getNum()));
+        orderEntity.setPayAmount(multiply);
+
+        this.save(orderEntity);
+
+        //保存订单项信息
+        OrderItemEntity itemEntity = new OrderItemEntity();
+
+        itemEntity.setOrderSn(to.getOrderSn());
+        itemEntity.setRealAmount(multiply);
+        itemEntity.setSkuQuantity(to.getNum());
+
+        orderItemService.save(itemEntity);
     }
 
     /**

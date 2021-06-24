@@ -5,6 +5,9 @@ spring:
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
+    sentinel:
+      transport:
+        dashboard: localhost:8333
   # 关闭缓存
   thymeleaf:
     cache: false
@@ -15,4 +18,10 @@ spring:
 server:
   port: 40000
 
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: *
 

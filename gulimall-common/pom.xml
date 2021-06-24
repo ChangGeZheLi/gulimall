@@ -30,6 +30,10 @@
 <!--            <groupId>com.alibaba.cloud</groupId>-->
 <!--            <artifactId>spring-cloud-starter-alibaba-seata</artifactId>-->
 <!--        </dependency>-->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+        </dependency>
         <!--        添加nacos依赖，服务注册发现-->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
