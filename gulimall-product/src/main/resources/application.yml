@@ -54,12 +54,6 @@ server:
 logging:
   level:
     com.syong.gulimall: debug
-#配置阿里云oss信息(不兼容)
-#alibaba:
-#  cloud:
-#    access-key: LTAI5tCRwrfdF8KACAg8SQt9
-#    secret-key: 9AR7CxiXdQLjFlGiwN8DT9h4mGp9Bq
-#    oss:
-#      endpoint: oss-cn-hangzhou.aliyuncs.com
+
 
 
